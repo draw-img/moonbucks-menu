@@ -8,16 +8,9 @@
  * [ ] 사용자 입력값이 빈 값이라면 추가되지 않는다.
  */
 
-const $ = (selector) => document.querySelector(selector)
+import { $ } from './utils/dom.js';
+import store from './store/index.js';
 
-const store = {
-  setLocalStorage(menu) {
-    localStorage.setItem("menu", JSON.stringify(menu))
-  },
-  getLocalStorage() {
-    return JSON.parse(localStorage.getItem("menu"));
-  }
-}
 
 function App() {
   //상태(변하는 데이터) - 메뉴이름
@@ -36,6 +29,7 @@ function App() {
       this.menu = store.getLocalStorage();
     }
     render();
+    initEventListeners();
   }
 
   const render = () => {
@@ -70,7 +64,8 @@ function App() {
   }
   const updateMenuCount = () => {
     //추가된 메뉴 카운팅
-    const menuCount = $("#menu-list").querySelectorAll("li").length;
+    //const menuCount = $("#menu-list").querySelectorAll("li").length;
+    const menuCount = this.menu[this.currentCategory].length;
     $(".menu-count").innerText = `총 ${menuCount} 개`;
   } 
   
@@ -96,9 +91,10 @@ function App() {
     const $menuName = e.target.closest("li").querySelector(".menu-name");
     const updatedMenuName = prompt("메뉴명을 수정하세요", $menuName.innerText);
     this.menu[this.currentCategory][menuId].name = updatedMenuName;
-
-    $menuName.innerText = updatedMenuName;
     store.setLocalStorage(this.menu);
+
+    //$menuName.innerText = updatedMenuName;
+    render()
   }
   //삭제버튼
   const removeMenuName = (e) => {
@@ -106,7 +102,8 @@ function App() {
       const menuId = e.target.closest("li").dataset.menuId;
       this.menu[this.currentCategory].splice(menuId, 1);
       store.setLocalStorage(this.menu)
-      e.target.closest("li").remove();
+      // e.target.closest("li").remove();
+      render();
       updateMenuCount();
     }
   }
@@ -118,52 +115,54 @@ function App() {
     render();
   }
 
-  $("#menu-list").addEventListener("click", (e) => {
-    // console.log(e.target)
-    //메뉴수정
-    if(e.target.classList.contains("menu-edit-button")) {
+  const initEventListeners = () => {
+    $("#menu-list").addEventListener("click", (e) => {
       // console.log(e.target)
-      updateManuName(e);
-      return
-    }
-
-    //메뉴삭제
-    if(e.target.classList.contains("menu-remove-button")) {
-      removeMenuName(e)
-      return
-    }
-
-    if(e.target.classList.contains("menu-sold-out-button")) {
-      soldOutMenu(e);
-      return
-    }
-  })
-  //form 태그가 자동으로 전송되는걸 막아준다
-  $("#menu-form").addEventListener("submit", (e) => {
-    e.preventDefault();
-  })
-
-  //확인버튼을 눌러 메뉴를 추가한다
-  $("#menu-submit-button").addEventListener("click", addMenuName);
-
-  //메뉴의 이름을 입력받는
-  $("#menu-name").addEventListener("keypress", (e) => {
-     //엔터키가 아닐경우 리턴
-     if(e.key !== 'Enter') {
-      return
-     }
-     addMenuName();
-  })
-
-  $("nav").addEventListener("click", (e) => {
-    const isCategoryButton = e.target.classList.contains("cafe-category-name")
-    if(isCategoryButton) {
-      const categoryName = e.target.dataset.categoryName;
-      this.currentCategory = categoryName;
-      $("#category-title").innerText = `${e.target.innerText} 메뉴관리`;
-      render()
-    }
-  })
+      //메뉴수정
+      if(e.target.classList.contains("menu-edit-button")) {
+        // console.log(e.target)
+        updateManuName(e);
+        return
+      }
+  
+      //메뉴삭제
+      if(e.target.classList.contains("menu-remove-button")) {
+        removeMenuName(e)
+        return
+      }
+  
+      if(e.target.classList.contains("menu-sold-out-button")) {
+        soldOutMenu(e);
+        return
+      }
+    })
+    //form 태그가 자동으로 전송되는걸 막아준다
+    $("#menu-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+    })
+  
+    //확인버튼을 눌러 메뉴를 추가한다
+    $("#menu-submit-button").addEventListener("click", addMenuName);
+  
+    //메뉴의 이름을 입력받는
+    $("#menu-name").addEventListener("keypress", (e) => {
+       //엔터키가 아닐경우 리턴
+       if(e.key !== 'Enter') {
+        return
+       }
+       addMenuName();
+    })
+  
+    $("nav").addEventListener("click", (e) => {
+      const isCategoryButton = e.target.classList.contains("cafe-category-name")
+      if(isCategoryButton) {
+        const categoryName = e.target.dataset.categoryName;
+        this.currentCategory = categoryName;
+        $("#category-title").innerText = `${e.target.innerText} 메뉴관리`;
+        render()
+      }
+    })
+  }
   
 }
 
