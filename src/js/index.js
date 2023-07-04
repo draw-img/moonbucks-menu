@@ -15,29 +15,21 @@ const store = {
     localStorage.setItem("menu", JSON.stringify(menu))
   },
   getLocalStorage() {
-    localStorage.getItem("menu");
+    return JSON.parse(localStorage.getItem("menu"));
   }
 }
 
 function App() {
   //상태(변하는 데이터) - 메뉴이름
   this.menu = [];  //상태값 선언
-
-  const updateMenuCount = () => {
-    //추가된 메뉴 카운팅
-    const menuCount = $("#espresso-menu-list").querySelectorAll("li").length;
-    $(".menu-count").innerText = `총 ${menuCount} 개`;
-  } 
-  const addMenuName = () => {
-    //사용자 입력값이 빈 값이라면 추가되지 않게
-    if($("#espresso-menu-name").value === "") {
-      alert("값을 입력해 주세요");
-      return 
+  this.init = () => {
+    if(store.getLocalStorage().length > 1) {
+      this.menu = store.getLocalStorage();
     }
+    render();
+  }
 
-    const espressoMenuName = $("#espresso-menu-name").value
-    this.menu.push({ name: espressoMenuName });
-    store.setLocalStorage(this.menu);
+  const render = () => {
     const template = this.menu.map((menuItem, index) => {
       return `
         <li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
@@ -56,17 +48,32 @@ function App() {
         </button>
       </li>`
     }).join('')
+
     $("#espresso-menu-list").innerHTML = template;
+    //메뉴갯수 카운팅
+    updateMenuCount();
+  }
+  const updateMenuCount = () => {
+    //추가된 메뉴 카운팅
+    const menuCount = $("#espresso-menu-list").querySelectorAll("li").length;
+    $(".menu-count").innerText = `총 ${menuCount} 개`;
+  } 
+  
+  const addMenuName = () => {
+    //사용자 입력값이 빈 값이라면 추가되지 않게
+    if($("#espresso-menu-name").value === "") {
+      alert("값을 입력해 주세요");
+      return 
+    }
 
-      //메뉴갯수 카운팅
-      updateMenuCount();
+    const espressoMenuName = $("#espresso-menu-name").value
+    this.menu.push({ name: espressoMenuName });
+    store.setLocalStorage(this.menu);
 
-      //추가된 메뉴 카운팅
-      const menuCount = $("#espresso-menu-list").querySelectorAll("li").length;
-      $(".menu-count").innerText = `총 ${menuCount} 개`;
-      
-      //메뉴 추가되고 나면 input 빈값
-      $("#espresso-menu-name").value = '';
+    render();
+
+    //메뉴 추가되고 나면 input 빈값
+    $("#espresso-menu-name").value = '';
   }
   //수정버튼
   const updateManuName = (e) => {
@@ -118,6 +125,8 @@ function App() {
      }
      addMenuName();
   })
+
 }
 
-new App();
+const app = new App();
+app.init();
