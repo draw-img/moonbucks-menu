@@ -10,7 +10,18 @@
 
 const $ = (selector) => document.querySelector(selector)
 
+const store = {
+  setLocalStorage(menu) {
+    localStorage.setItem("menu", JSON.stringify(menu))
+  },
+  getLocalStorage() {
+    localStorage.getItem("menu");
+  }
+}
+
 function App() {
+  //상태(변하는 데이터) - 메뉴이름
+  this.menu = [];  //상태값 선언
 
   const updateMenuCount = () => {
     //추가된 메뉴 카운팅
@@ -25,11 +36,12 @@ function App() {
     }
 
     const espressoMenuName = $("#espresso-menu-name").value
-    //console.log(espressoMenuName);
-    const menuItemTemplate = (espressoMenuName) => {
+    this.menu.push({ name: espressoMenuName });
+    store.setLocalStorage(this.menu);
+    const template = this.menu.map((menuItem, index) => {
       return `
-        <li class="menu-list-item d-flex items-center py-2">
-        <span class="w-100 pl-2 menu-name">${espressoMenuName}</span>
+        <li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
+        <span class="w-100 pl-2 menu-name">${menuItem.name}</span>
         <button
           type="button"
           class="bg-gray-50 text-gray-500 text-sm mr-1 menu-edit-button"
@@ -43,12 +55,8 @@ function App() {
           삭제
         </button>
       </li>`
-    };
-
-    //console.log(menuItemTemplate(espressoMenuName))
-    $("#espresso-menu-list").insertAdjacentHTML(
-      'beforeend',
-      menuItemTemplate(espressoMenuName));
+    }).join('')
+    $("#espresso-menu-list").innerHTML = template;
 
       //메뉴갯수 카운팅
       updateMenuCount();
@@ -61,15 +69,21 @@ function App() {
       $("#espresso-menu-name").value = '';
   }
   //수정버튼
-  const updatedManuName = (e) => {
+  const updateManuName = (e) => {
+    const menuId = e.target.closest("li").dataset.menuId;
     const $menuName = e.target.closest("li").querySelector(".menu-name");
-    const updatedManuName = prompt("메뉴명을 수정하세요", $menuName.innerText);
+    const updatedMenuName = prompt("메뉴명을 수정하세요", $menuName.innerText);
+    this.menu[menuId].name = updatedMenuName;
 
-    $menuName.innerText = updatedManuName;
+    $menuName.innerText = updatedMenuName;
+    store.setLocalStorage(this.menu);
   }
   //삭제버튼
   const removeMenuName = (e) => {
     if(confirm("삭제하시겠습니까?")) {
+      const menuId = e.target.closest("li").dataset.menuId;
+      this.menu.splice(menuId, 1);
+      store.setLocalStorage(this.menu)
       e.target.closest("li").remove();
       updateMenuCount();
     }
@@ -80,7 +94,7 @@ function App() {
     //메뉴수정
     if(e.target.classList.contains("menu-edit-button")) {
       // console.log(e.target)
-      updatedManuName(e);
+      updateManuName(e);
     }
 
     //메뉴삭제
@@ -106,4 +120,4 @@ function App() {
   })
 }
 
-App();
+new App();
